@@ -8,7 +8,7 @@ published: true
 
 ## やろうとしたこと
 
-社内ハッカソンで丸1日もらえた。前から気になっていた[OpenClaw](https://github.com/OpenClawGroup/OpenClaw)でUnityゲームを作ってみたかった。
+ハッカソンの機会に、話題の[OpenClaw](https://github.com/OpenClawGroup/OpenClaw)でUnityゲームを作ろうとした。
 
 普段はClaude CodeのSubagentで並行開発を回していて、それなりにうまくいっている。だったらOpenClawにオーケストレーションごと任せたらどうなるのか。コードも画像も音楽も全部AI、人間はディレクションだけ。どこまでいけるか試した。
 

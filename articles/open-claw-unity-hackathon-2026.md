@@ -33,7 +33,7 @@ https://github.com/rioX432/roguelike-survivor
 
 OpenClawには4つのサブエージェントを置いた。Architectがタスク分解とプロジェクト管理、Builder-Alphaがプレイヤー操作とUI、Builder-Betaが敵システムとデータ構造、Reviewerがコード品質チェック。
 
-OpenClawはローカルで動く自律エージェントなのでセキュリティは気にした。新規Macユーザープロファイルをデータ空の状態で作り、Docker Desktopでサンドボックス化して、その中でOpenClawを動かした。既存の開発環境とは完全に切り離してある。
+OpenClawはローカルで動く自律エージェントで、ファイル操作やコマンド実行の権限を持つ。セキュリティリスクを最小限にするために、新規Macユーザープロファイルをデータ空の状態で作り、APIキーはこの検証専用のClaude API Keyを発行し、Docker Desktopでサンドボックス化した環境でのみOpenClawを実行した。既存の開発環境や認証情報には一切触れさせていない。
 
 ## 並行PR生成は確かにすごい
 

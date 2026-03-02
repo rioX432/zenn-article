@@ -69,6 +69,10 @@ topics:
 
 ## LINE通知 → Quick Reply → Webhook
 
+実際にこんな感じで届く。
+
+![LINEに届いたデイリーダイジェスト](/images/ai-secretary-line-screenshot.png)
+
 記事一覧をLINE Pushで送った直後に、「今日の記事、参考になりましたか？」という別メッセージを送る。3択のQuick Replyボタンがついている。
 
 ```

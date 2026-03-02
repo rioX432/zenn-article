@@ -30,7 +30,19 @@ Vercel Webhook で受信 → mem0 に保存
 翌日のスコアリングに反映
 ```
 
-実装はNode.js 22 + TypeScript（ESM）で、[Mastra](https://mastra.ai/)というTypeScript製AIフレームワークを使ってGeminiとの接続やエージェントの設定を書いています。ランニングコストは月$0.10以下を目標にしているので、LLMはGemini 2.5 Flash（無料枠あり）を選んでいます。
+使っている技術スタックはこちら。
+
+| 役割 | 選択 | 理由 |
+|---|---|---|
+| Runtime | Node.js 22 + TypeScript (ESM) | — |
+| AI Framework | [Mastra](https://mastra.ai/) | TypeScriptでエージェント・ワークフローを宣言的に書ける |
+| LLM | Gemini 2.5 Flash | 無料枠があり、コスト目標$0.10/月を達成しやすい |
+| 通知 | LINE Messaging API | Push通知 + Quick Replyが使える |
+| メモリ | [mem0](https://mem0.ai/) | フィードバック履歴をクラウドに永続化 |
+| CI | GitHub Actions | cronで毎朝自動実行 |
+| Webhook | Vercel Serverless Functions | LINE PostbackイベントをGitHub Actions外で受け取る |
+
+ランニングコストは月$0.10以下を目標に、すべて無料枠で動かしています。
 
 ## ディレクトリ構成
 
@@ -48,7 +60,64 @@ api/
 └── line-webhook.ts # Vercel Serverless Function
 ```
 
-GitHub Actionsのcronで毎朝7時（JST）に `src/mastra/workflows/daily-digest.ts` を実行。カスタマイズするときに触るのはほぼ `data/interests.yaml` だけで、フィードURLと興味トピック・キーワードをここに書いていく。
+GitHub Actionsのcronで毎朝10時（JST）に `src/mastra/workflows/daily-digest.ts` を実行。カスタマイズするときに触るのはほぼ `data/interests.yaml` だけで、フィードURLと興味トピック・キーワードをここに書いていく。
+
+## セットアップに必要なもの
+
+**サービスとAPIキー:**
+
+| 環境変数 | 取得場所 |
+|---|---|
+| `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/) |
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE Developers → Messaging API → Channel access token |
+| `LINE_USER_ID` | LINE Developers → Messaging API → あなたのUser ID |
+| `LINE_CHANNEL_SECRET` | LINE Developers → Basic settings → Channel secret |
+| `MEM0_API_KEY` | [mem0.ai](https://app.mem0.ai/) → Settings → API Keys |
+
+**主要パッケージ:**
+
+```bash
+npm install @mastra/core @ai-sdk/google mem0ai js-yaml fast-xml-parser
+npm install -D typescript tsx @types/node @biomejs/biome @vercel/node
+```
+
+**GitHub Actions（`.github/workflows/daily-digest.yml`）:**
+
+```yaml
+on:
+  schedule:
+    - cron: "0 1 * * *"  # JST 10:00
+  workflow_dispatch:
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run daily
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
+          MEM0_API_KEY: ${{ secrets.MEM0_API_KEY }}
+```
+
+**Vercel（LINE Webhookサーバー）:**
+
+```bash
+npm install -g vercel
+vercel link
+vercel env add LINE_CHANNEL_SECRET
+vercel env add MEM0_API_KEY
+vercel deploy --prod
+# → 発行されたURLをLINE DevelopersのWebhook URLに設定
+```
 
 ## 情報収集 — 3ソースを並行取得
 
@@ -77,6 +146,17 @@ topics:
   - name: VTuber技術
     weight: 0.8
     keywords: ["Live2D", "VTuber", "AITuber", "音声合成"]
+```
+
+scoringセクションで通知件数のロジックを制御できます。
+
+```yaml
+scoring:
+  max_articles: 50        # 1回のスコアリングで処理する最大記事数
+  top_n: 5                # 最低保証件数
+  min_score: 0.3          # この閾値以下は除外
+  high_score_threshold: 0.8  # この閾値以上は全件通知（当たり日ボーナス）
+  max_cap: 10             # 1日の最大通知件数
 ```
 
 これをGeminiに渡して、各記事を0〜1でスコアリングしてもらう。プロンプトにはフィードバック履歴も含めるので、「先週これが役立った」「これは興味なかった」という情報がスコアに影響する。
@@ -146,3 +226,5 @@ not_interested → "量子コンピューティング入門"
 この規模のBotを一から作るとなると、以前なら週末1〜2日はかかっていたと思う。今回はClaude Codeを使いながら開発を進めて、私の場合は構想から動作確認まで数時間で完結した。RSS取得・スコアリング・LINE通知・Webhookサーバー・メモリ基盤、それぞれの実装をClaude Codeに任せつつ、自分は「何を作るか」「どう組み合わせるか」の判断に集中できた。VercelのデプロイやLINE署名検証あたりで多少手こずった以外は、ほぼ詰まらなかった。
 
 「AIエージェントが技術の進化を加速させている」と書いたけれど、それは自分の開発体験にも当てはまっていた。今回作ったBotで学習の効率化を図りながら、その開発自体もAIで効率化されている。道具が道具を作る時代になってきたなと改めて感じた。
+
+同じような情報収集の課題を抱えている方や、「自分はこう作った」という方がいたらZennのコメントで教えてもらえると嬉しいです。

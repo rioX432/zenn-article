@@ -30,9 +30,25 @@ Vercel Webhook で受信 → mem0 に保存
 翌日のスコアリングに反映
 ```
 
-GitHub Actions で毎朝7時に自動実行。実装はNode.js 22 + TypeScript（ESM）で、[Mastra](https://mastra.ai/)というTypeScript製AIフレームワークを使ってGeminiとの接続やエージェントの設定を書いています。
+実装はNode.js 22 + TypeScript（ESM）で、[Mastra](https://mastra.ai/)というTypeScript製AIフレームワークを使ってGeminiとの接続やエージェントの設定を書いています。ランニングコストは月$0.10以下を目標にしているので、LLMはGemini 2.5 Flash（無料枠あり）を選んでいます。
 
-ランニングコストは月$0.10以下を目標にしているので、LLMはGemini 2.5 Flash（無料枠あり）を選んでいます。
+## ディレクトリ構成
+
+```
+src/mastra/
+├── workflows/      # エントリポイント（GitHub Actionsから呼び出す）
+├── agents/         # Geminiスコアリングエージェント
+├── tools/          # RSS / LINE / GitHub Trending 接続
+├── handlers/       # LINE Webhookハンドラー
+└── memory/         # mem0ラッパー（フィードバック保存・取得）
+data/
+├── interests.yaml  # 興味プロファイルとフィードURL（メインの設定ファイル）
+└── sources.yaml    # 各ソースの有効/無効・重み設定
+api/
+└── line-webhook.ts # Vercel Serverless Function
+```
+
+GitHub Actionsのcronで毎朝7時（JST）に `src/mastra/workflows/daily-digest.ts` を実行。カスタマイズするときに触るのはほぼ `data/interests.yaml` だけで、フィードURLと興味トピック・キーワードをここに書いていく。
 
 ## 情報収集 — 3ソースを並行取得
 

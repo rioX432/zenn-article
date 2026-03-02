@@ -165,6 +165,8 @@ scoring:
 
 ## LINE通知 → Quick Reply → Webhook
 
+通知チャネルとしてはTelegramが一番手軽だけど、あえてLINEを選んだ。毎日必ず開くアプリに届くようにしないと、通知があっても見逃すリスクがある。自分にとって一番日常に溶け込んでいるのがLINEだったので、そこに絞ることにした。
+
 実際にこんな感じで届く。
 
 ![LINEに届いたデイリーダイジェスト](/images/ai-secretary-line-screenshot.png)

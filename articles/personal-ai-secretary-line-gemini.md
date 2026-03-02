@@ -107,14 +107,6 @@ not_interested → "量子コンピューティング入門"
 
 翌日のスコアリング時に過去14日分のフィードバックをGeminiのプロンプトに含める。「役立った」記事と似たものはスコアが上がり、「興味なし」と近いものは下がっていく。
 
-## ハマったポイント
-
-**Vercel runtimeの指定でコケた。** 最初の `vercel.json` に `"runtime": "nodejs22.x"` と書いたら「Function Runtimes must have a valid version」エラーが出た。Node.jsはVercelのビルトインなので `runtime` フィールド自体が不要で、`vercel.json` を丸ごと消したらあっさり動いた。
-
-**LINE署名検証で401。** `LINE_CHANNEL_SECRET` をVercel環境変数に間違えた値で登録していた。LINE DevelopersのBasic settingsにある「Channel secret」とMessaging APIの「Channel access token」は別物で、署名検証に使うのは前者。混同しがち。
-
-**`vercel env add` はlinkが先。** `vercel env add` を実行したら「まずプロジェクトにlinkしてから」と怒られた。`vercel link` → `vercel env add` → `vercel deploy --prod` の順番を守る必要がある。
-
 ## コスト
 
 | 項目 | コスト |
@@ -126,11 +118,5 @@ not_interested → "量子コンピューティング入門"
 | mem0 | 無料枠内 |
 
 全部無料枠でまかなえている。個人用途で使う分にはしばらく大丈夫そうだけど、フィードバックが積み上がってmem0の読み書きが増えてきたら有料プランへの切り替えを検討するつもり。
-
-## コードはOSSで公開中
-
-https://github.com/rioX432/personal-ai-secretary
-
-`data/interests.yaml` の興味プロファイルを書き換えるだけで自分用にカスタマイズできます。セットアップ手順はREADMEに書いています。
 
 今日デプロイしたばかりなので、フィードバックループがどのくらいのペースで効いてくるかはこれから検証します。1〜2週間使い込んだら、スコアリングの変化をまた記事にまとめたい。

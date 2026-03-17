@@ -3,7 +3,7 @@ title: "「AIっぽい」の正体は文体じゃない — 全業務をAIエー
 emoji: "🪞"
 type: "idea"
 topics: ["AI", "Claude", "プロンプト", "ライティング", "生成AI"]
-published: false
+published: true
 ---
 
 RIOです。AnotherBallでモバイルエンジニアをしていて、[Avvy](https://avvy.live/)というアプリを開発しています。（[@rioX432](https://x.com/rioX432)）
